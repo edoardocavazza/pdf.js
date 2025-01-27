@@ -635,6 +635,7 @@ class Annotation {
     this.setModificationDate(dict.get("M"));
     this.setFlags(dict.get("F"));
     this.setRectangle(dict.getArray("Rect"));
+    this.setRectangleDifference(dict.getArray("RD"));
     this.setColor(dict.getArray("C"));
     this.setBorderStyle(dict);
     this.setAppearance(dict);
@@ -953,6 +954,17 @@ class Annotation {
    */
   setRectangle(rectangle) {
     this.rectangle = lookupNormalRect(rectangle, [0, 0, 0, 0]);
+  }
+
+  /**
+   * Set the rectangle difference.
+   *
+   * @public
+   * @memberof Annotation
+   * @param {Array} rectangleDifference - The rectangle difference array with
+   */
+  setRectangleDifference(rectangleDifference) {
+    this.rectangleDifference = lookupRect(rectangleDifference, [0, 0, 0, 0]);
   }
 
   /**
@@ -1744,6 +1756,7 @@ class MarkupAnnotation extends Annotation {
     appearanceDict.set("Resources", resources);
     const bbox = (this.data.rect = [minX, minY, maxX, maxY]);
     appearanceDict.set("BBox", bbox);
+    this.data.rectangleDifference = this.rectangleDifference;
 
     this.appearance = new StringStream("/GS0 gs /Fm0 Do");
     this.appearance.dict = appearanceDict;
@@ -3815,6 +3828,7 @@ class PopupAnnotation extends Annotation {
       this.data.rect[1] === this.data.rect[3]
     ) {
       this.data.rect = null;
+      this.data.rectDifference = null;
     }
 
     let parentItem = dict.get("Parent");
@@ -4178,28 +4192,6 @@ class SquareAnnotation extends MarkupAnnotation {
     this.data.annotationType = AnnotationType.SQUARE;
     this.data.hasOwnCanvas = this.data.noRotate;
     this.data.noHTML = false;
-
-    this.data.vertices = [
-      this.rectangle[0],
-      this.rectangle[1],
-      this.rectangle[2],
-      this.rectangle[1],
-      this.rectangle[2],
-      this.rectangle[3],
-      this.rectangle[0],
-      this.rectangle[3],
-    ];
-    if (dict.has("RD")) {
-      const rectDifference = dict.getArray("RD");
-      this.data.vertices[0] += rectDifference[0];
-      this.data.vertices[1] += rectDifference[1];
-      this.data.vertices[2] -= rectDifference[2];
-      this.data.vertices[3] += rectDifference[1];
-      this.data.vertices[4] -= rectDifference[2];
-      this.data.vertices[5] -= rectDifference[3];
-      this.data.vertices[6] += rectDifference[0];
-      this.data.vertices[7] -= rectDifference[3];
-    }
 
     if (!this.appearance) {
       // The default stroke color is black.
