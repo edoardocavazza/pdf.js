@@ -652,6 +652,7 @@ class Annotation {
     this.setModificationDate(dict.get("M"));
     this.setFlags(dict.get("F"));
     this.setRectangle(dict.getArray("Rect"));
+    this.setRectangleDifference(dict.getArray("RD"));
     this.setColor(dict.getArray("C"));
     this.setBorderStyle(dict);
     this.setAppearance(dict);
@@ -970,6 +971,17 @@ class Annotation {
    */
   setRectangle(rectangle) {
     this.rectangle = lookupNormalRect(rectangle, [0, 0, 0, 0]);
+  }
+
+  /**
+   * Set the rectangle difference.
+   *
+   * @public
+   * @memberof Annotation
+   * @param {Array} rectangleDifference - The rectangle difference array with
+   */
+  setRectangleDifference(rectangleDifference) {
+    this.rectangleDifference = lookupRect(rectangleDifference, [0, 0, 0, 0]);
   }
 
   /**
@@ -1769,6 +1781,7 @@ class MarkupAnnotation extends Annotation {
     appearanceDict.set("Resources", resources);
     const bbox = (this.data.rect = [minX, minY, maxX, maxY]);
     appearanceDict.set("BBox", bbox);
+    this.data.rectangleDifference = this.rectangleDifference;
 
     this.appearance = new StringStream("/GS0 gs /Fm0 Do");
     this.appearance.dict = appearanceDict;
@@ -3816,6 +3829,7 @@ class PopupAnnotation extends Annotation {
 
     if (this.width === 0 || this.height === 0) {
       this.data.rect = null;
+      this.data.rectDifference = null;
     }
 
     let parentItem = dict.get("Parent");
