@@ -15,6 +15,7 @@
 
 import {
   AnnotationActionEventType,
+  AnnotationBorderEffectType,
   AnnotationBorderStyleType,
   AnnotationEditorType,
   AnnotationFieldFlag,
@@ -1101,6 +1102,19 @@ class Annotation {
       // See also https://github.com/mozilla/pdf.js/issues/6179.
       this.borderStyle.setWidth(0);
     }
+    if (borderStyle.has("BE")) {
+      const dict = borderStyle.get("BE");
+      if (dict instanceof Dict) {
+        const effect = dict.get("S");
+        if (effect instanceof Name) {
+          this.borderStyle.setEffect(effect);
+          const intensity = dict.get("I");
+          if (typeof intensity === "number") {
+            this.borderStyle.setEffectIntensity(intensity);
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -1531,6 +1545,41 @@ class AnnotationBorderStyle {
       default:
         break;
     }
+  }
+
+  /**
+   * Set the border effect.
+   *
+   * @public
+   * @memberof AnnotationBorderStyle
+   * @param {Name} effect - The annotation effect.
+   * @see {@link shared/util.js}
+   */
+  setEffect(effect) {
+    if (!(effect instanceof Name)) {
+      return;
+    }
+    switch (effect.name) {
+      case "C":
+        this.effect = AnnotationBorderEffectType.CLOUD;
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
+   * Set the effect intensity.
+   *
+   * @public
+   * @memberof AnnotationBorderStyle
+   * @param {number} intensity - The intensity of the effect.
+   */
+  setEffectIntensity(intensity) {
+    if (typeof intensity !== "number" || !Number.isInteger(intensity)) {
+      return;
+    }
+    this.effectIntensity = intensity;
   }
 
   /**
@@ -4179,6 +4228,28 @@ class SquareAnnotation extends MarkupAnnotation {
     this.data.annotationType = AnnotationType.SQUARE;
     this.data.hasOwnCanvas = this.data.noRotate;
     this.data.noHTML = false;
+
+    this.data.vertices = [
+      this.rectangle[0],
+      this.rectangle[1],
+      this.rectangle[2],
+      this.rectangle[1],
+      this.rectangle[2],
+      this.rectangle[3],
+      this.rectangle[0],
+      this.rectangle[3],
+    ];
+    if (dict.has("RD")) {
+      const rectDifference = dict.getArray("RD");
+      this.data.vertices[0] += rectDifference[0];
+      this.data.vertices[1] += rectDifference[1];
+      this.data.vertices[2] -= rectDifference[2];
+      this.data.vertices[3] += rectDifference[1];
+      this.data.vertices[4] -= rectDifference[2];
+      this.data.vertices[5] -= rectDifference[3];
+      this.data.vertices[6] += rectDifference[0];
+      this.data.vertices[7] -= rectDifference[3];
+    }
 
     if (!this.appearance) {
       // The default stroke color is black.
