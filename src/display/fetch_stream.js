@@ -29,9 +29,9 @@ if (typeof PDFJSDev !== "undefined" && PDFJSDev.test("MOZCENTRAL")) {
   );
 }
 
-function createFetchOptions(headers, withCredentials, abortController) {
+function createFetchOptions(method, headers, withCredentials, abortController) {
   return {
-    method: "GET",
+    method,
     headers,
     signal: abortController.signal,
     mode: "cors",
@@ -121,7 +121,12 @@ class PDFFetchStreamReader {
     const url = source.url;
     fetch(
       url,
-      createFetchOptions(headers, this._withCredentials, this._abortController)
+      createFetchOptions(
+        "HEAD",
+        headers,
+        this._withCredentials,
+        this._abortController
+      )
     )
       .then(response => {
         stream._responseOrigin = getResponseOrigin(response.url);
@@ -219,7 +224,12 @@ class PDFFetchStreamRangeReader {
     const url = source.url;
     fetch(
       url,
-      createFetchOptions(headers, this._withCredentials, this._abortController)
+      createFetchOptions(
+        "GET",
+        headers,
+        this._withCredentials,
+        this._abortController
+      )
     )
       .then(response => {
         const responseOrigin = getResponseOrigin(response.url);
