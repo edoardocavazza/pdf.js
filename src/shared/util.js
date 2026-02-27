@@ -202,6 +202,10 @@ const AnnotationFieldFlag = {
   COMMITONSELCHANGE: 0x4000000,
 };
 
+const AnnotationBorderEffectType = {
+  CLOUD: 1,
+};
+
 const AnnotationBorderStyleType = {
   SOLID: 1,
   DASHED: 2,
@@ -1318,6 +1322,7 @@ export {
   _isValidExplicitDest,
   AbortException,
   AnnotationActionEventType,
+  AnnotationBorderEffectType,
   AnnotationBorderStyleType,
   AnnotationEditorParamsType,
   AnnotationEditorPrefix,
